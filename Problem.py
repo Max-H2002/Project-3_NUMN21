@@ -17,9 +17,9 @@ class Problem:
             D: Point, coordinates of the left up corner of the rectangle
             delta_x: float, stepsize of the grid in x direction
             delta_y: float, stepsize of the grid in y direction
-            boundary_conditions: list of lenght 4. the i-th el in the list is the list of tuple pairs in the format (string, float),
-            where string is the condition type ("Dirichlet"/"Neumann") and float is the value of the condition. 
-            Each pair sets boundary condition one node. 
+            boundary_conditions: list of lenght 4. the i-th el in the list is the list of tuple pairs in the format (condition_type, value,length),
+            where the condition_type is string ("Dirichlet"/"Neumann") and value and length are floats. 
+            Each triplet sets boundary condition on the part of the boundary of length length.  
             i = 0 correspond to the lower boundary, other boundaries are numerated in the conterclockwise order respectively.
 
         """
@@ -31,7 +31,10 @@ class Problem:
         self.delta_y = delta_y
         self.boundary_conditions = boundary_conditions
         
-        # To do : implement checks, if the parameters are valid (delta_x/delta_y,boundary conditions)
+        # To do : 
+        # - implement checks, if the parameters are valid (delta_x/delta_y,boundary conditions)
+        # - store points ccw
+        
 
     def update_boundary(self,new_values: list, i:int):
         '''
@@ -47,5 +50,6 @@ class Problem:
         self.boundary_conditions[i] = new_values
         
         # To do : implement checks, if the new boundary conditions are valid
+
 
         
