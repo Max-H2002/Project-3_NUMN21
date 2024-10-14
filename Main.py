@@ -1,104 +1,257 @@
-#Main class
-#MPI
-from mpi4py import MPI
 import numpy as np
+from mpi4py import MPI
 from Problem import Problem
-from Method import Method
 from Point import Point
+from Method import Method
+from Neighbour import Neighbour
+import BoundaryConditionsUpdate as bc
+from PlotTemperature import plot_temperature
+
+# Starting values
+ITERATIONS = 100  # Number of iterations for the simulation
+n = 6 # number of nodes on the unit segment
+step_size = 1/(n-1) # lenght of the grid size, in this case delta_x = delta_y = step_size
+omega = 0.8 # relaxation parameter
+
+# Initialize the MPI communication
+comm = MPI.Comm.Clone(MPI.COMM_WORLD)
+rank = comm.Get_rank()  # Get the rank of the process
+
+# -----------------------------------------Init problems----------------------------------------------------------------
+
+# Initialize first problem (room1)
+# Init points
+# Note: we start numbering points from bottom left corner and go conterclockwise
+p1 = Point(0,0)
+p2 = Point(1,0)
+p3 = Point(1,1)
+p4 = Point(0,1)
+
+boundary1_type = ["Dirichlet"] * n  # Bottom
+boundary2_type = ["Neumann"] * n   # Right
+boundary3_type = ["Dirichlet"] * n  # Top
+boundary4_type = ["Dirichlet"] * n  # Left
+bound_cond_types = [boundary1_type, boundary2_type, boundary3_type, boundary4_type]
+
+boundary1_value = [15] * n  # Bottom
+boundary2_value = [15] * n  # Right
+boundary3_value = [15] * n  # Top
+boundary4_value = [40] * n  # Left
+bound_cond_values = [boundary1_value, boundary2_value, boundary3_value, boundary4_value]
+
+problem1 = Problem("room1", p1, p2, p3, p4, step_size, step_size, bound_cond_types, bound_cond_values)
 
 
-# Constants for the simulation
-ITERATIONS = 10  # Number of iterations for the simulation
-MESH_SIZE = 1 / 20  # Size of the mesh
-OMEGA = 0.8  # Relaxation factor (if needed)
+# Initialize second problem (room2)
+p1 = Point(1,0)
+p2 = Point(2,0)
+p3 = Point(2,2)
+p4 = Point(1,2)
 
-if _name_ == "_main_":
-    # Initialize the MPI communication
-    comm = MPI.Comm.Clone(MPI.COMM_WORLD)
-    rank = comm.Get_rank()  # Get the rank of the process
+boundary1_type = ["Dirichlet"] * (2 * n)
+boundary2_type = ["Dirichlet"] * (2 * n)
+boundary3_type = ["Dirichlet"] * (2 * n)
+boundary4_type = ["Dirichlet"] * (2 * n)
+bound_cond_types = [boundary1_type, boundary2_type, boundary3_type, boundary4_type]
 
-    num_points_boundary = int(1 / MESH_SIZE)  # Number of boundary points based on mesh size
+boundary1_value = [5] * (2 * n)
+boundary2_value = [15] * (2 * n)
+boundary3_value = [40] * (2 * n)
+boundary4_value = [15] * (2 * n)
+bound_cond_values = [boundary1_value, boundary2_value, boundary3_value, boundary4_value]
 
-    problem1_conditions = [('Dirichlet', 15), ('Neumann', 0), ('Dirichlet', 15), ('Dirichlet', 40)] # Unclear if the Neumann condition is correct, what is the initial value?
-    problem2_conditions = [('Dirichlet', 5), ('Dirichlet', 0), ('Dirichlet', 40), ('Dirichlet', 0)] # What is the initial values of the room boundaries? How do we handle the parts of the left and right boundaries of the middle room not connected to the other rooms?
-    problem3_conditions = [('Dirichlet', 15), ('Dirichlet', 40), ('Dirichlet', 15), ('Neumann', 0)] # Unclear if the Neumann condition is correct, what is the initial value?
+problem2 = Problem("room2", p1, p2, p3, p4, step_size, step_size, bound_cond_types, bound_cond_values)
 
-    # Initialize problem instances for each omega (area)
-    problem1 = Problem(Point(0, 0), Point(1, 1), Point(1, 1), Point(0, 0), MESH_SIZE, MESH_SIZE, problem1_conditions)
-    problem2 = Problem(Point(0, 0), Point(1, 2), Point(1, 2), Point(0, 0), MESH_SIZE, MESH_SIZE, problem2_conditions)
-    problem3 = Problem(Point(0, 0), Point(1, 1), Point(1, 1), Point(0, 0), MESH_SIZE, MESH_SIZE, problem3_conditions)
 
+
+# Initialize third problem (room3)
+p1 = Point(2,1)
+p2 = Point(3,1)
+p3 = Point(3,2)
+p4 = Point(2,2)
+
+boundary1_type = ["Neumann"] * (1 * n)
+boundary2_type = ["Dirichlet"] * (1 * n)
+boundary3_type = ["Dirichlet"] * (1 * n)
+boundary4_type = ["Neumann"] * (1 * n)
+bound_cond_types = [boundary1_type, boundary2_type, boundary3_type, boundary4_type]
+
+boundary1_value = [15] * (1 * n)
+boundary2_value = [40] * (1 * n)
+boundary3_value = [15] * (1 * n)
+boundary4_value = [15] * (1 * n)
+bound_cond_values = [boundary1_value, boundary2_value, boundary3_value, boundary4_value]
+
+problem3 = Problem("room3", p1, p2, p3, p4, step_size, step_size, bound_cond_types, bound_cond_values)
+
+
+# Initialize forth problem (room4)
+p1 = Point(2, 0.5)
+p2 = Point(2.5, 0.5)
+p3 = Point(2.5, 1)
+p4 = Point(2, 1)
+
+boundary1_type = ["Dirichlet"] * int(0.5 * n)
+boundary2_type = ["Dirichlet"] * int(0.5 * n)
+boundary3_type = ["Neumann"] * int(0.5 * n)
+boundary4_type = ["Neumann"] * int(0.5 * n)
+bound_cond_types = [boundary1_type, boundary2_type, boundary3_type, boundary4_type]
+
+boundary1_value = [40] * int(0.5 * n)
+boundary2_value = [15] * int(0.5 * n)
+boundary3_value = [15] * int(0.5 * n)
+boundary4_value = [15] * int(0.5 * n)
+bound_cond_values = [boundary1_value, boundary2_value, boundary3_value, boundary4_value]
+
+problem4 = Problem("room4", p1, p2, p3, p4, step_size, step_size, bound_cond_types, bound_cond_values)
+
+
+
+
+# -----------------------------------------Init neighbours----------------------------------------------------------------
+if rank == 0:
+    neighbour1 = Neighbour("room2", problem1, problem2, "Neumann")  # Placeholder
+elif rank == 1:
+    neighbour2_1 = Neighbour("room1", problem2, problem1, "Dirichlet")  # Placeholder
+    neighbour2_3 = Neighbour("room3", problem2, problem3, "Dirichlet")  # Placeholder
+    neighbour2_4 = Neighbour("room4", problem2, problem4, "Dirichlet")  # Placeholder
+elif rank == 2:
+    neighbour3 = Neighbour("room2", problem3, problem2, "Neumann")  # Placeholder
+elif rank == 3:
+    neighbour4 = Neighbour("room2", problem4, problem2, "Neumann")  # Placeholder
+
+method = Method()
+
+# ------------------------------------- Iterations -----------------------------------------------------------------------
+for i in range(ITERATIONS):
+    if(i!=0):
+        v_prev = v
+    
+    # ---------------------------- Process 1-------------------------------------------
     if rank == 0:
-        # Set boundary conditions for problem1
-        problem1.update_boundary(np.ones(num_points_boundary) * 40, 0)  # Left
-        problem1.update_boundary(np.ones(num_points_boundary) * 15, 2)  # Top
-        problem1.update_boundary(np.ones(num_points_boundary) * 15, 3)  # Bottom
+        new_types, new_values = comm.recv(source=1)
+
+        problem1.update_boundary(new_types, new_values, neighbour1)
+
+        v = method.solve(problem1)
+
+        if(i!=0): # do relaxation step
+            v = v*omega + (1-omega)*v_prev
+
+        new_types, new_values = bc.calculate_new_condition(v, problem1, neighbour1)
+
+        comm.send((new_types, new_values), dest=1)
         
-        temp_results = []
+    # ---------------------------- Process 2-------------------------------------------
+    elif rank == 1:        
+        v = method.solve(problem2)
 
-        for i in range(ITERATIONS):
-            # Send boundaries to problem2 (rank 1)
-            comm.send(problem1.update_boundary(), dest=1)
-            dirichlet_boundary = comm.recv(source=1)  # Receive updated boundaries from problem2
-            
-            # Update problem1 with the Dirichlet boundary
-            problem1.update_boundary(dirichlet_boundary, 1)  # Assume '1' corresponds to the suitable wall
+        if(i!=0): # do relaxation step
+            v = v*omega + (1-omega)*v_prev
 
-            # Solve problem1
-            result = Method.solve(problem1)
-            temp_results.append(result)
+        new_types_1, new_values_1 = bc.calculate_new_condition(v, problem2, neighbour2_1)
+        new_types_3, new_values_3 = bc.calculate_new_condition(v, problem2, neighbour2_3)
+        new_types_4, new_values_4 = bc.calculate_new_condition(v, problem2, neighbour2_4)
 
-        comm.send(temp_results, dest=3)  # Send results to rank 3 for presentation
+        comm.send((new_types_1, new_values_1), dest=0)
+        comm.send((new_types_3, new_values_3), dest=2)
+        comm.send((new_types_4, new_values_4), dest=3)
 
-    elif rank == 1:
-        # Set boundary conditions for problem2
-        problem2.update_boundary(np.ones(num_points_boundary) * 40, 2)  # Top
-        problem2.update_boundary(np.ones(num_points_boundary) * 5, 3)  # Bottom
+        # This might be wrong order
+        new_types_1, new_values_1 = comm.recv(source=0)
+        new_types_3, new_values_3 = comm.recv(source=2)
+        new_types_4, new_values_4 = comm.recv(source=3)
 
-        for i in range(ITERATIONS):
-            # Solve problem2
-            result = Method.solve(problem2)
-            
-            # Send left Dirichlet boundary to problem1
-            comm.send(result, dest=0)
-            # Receive Dirichlet boundary from problem1
-            dirichlet_boundary = comm.recv(source=0)
-            # Update the boundaries of problem2 with the received value
-            problem2.update_boundary(dirichlet_boundary, 0)  # Update left boundary
+        problem2.update_boundary(new_types_1, new_values_1, neighbour2_1)
+        problem2.update_boundary(new_types_3, new_values_3, neighbour2_3)
+        problem2.update_boundary(new_types_4, new_values_4, neighbour2_4)
 
-            # Prepare right Dirichlet send to problem3 (rank 2)
-            error_bound = np.ones(num_points_boundary)  # replace with your logic for error bounds
-            comm.send(error_bound, dest=2)
-
+    # ---------------------------- Process 3-------------------------------------------
     elif rank == 2:
-        # Set boundary conditions for problem3
-        problem3.update_boundary(np.ones(num_points_boundary) * 15, 2)  # Top
-        problem3.update_boundary(np.ones(num_points_boundary) * 15, 3)  # Bottom
-        problem3.update_boundary(np.ones(num_points_boundary) * 40, 4)  # Right
+        new_types, new_values = comm.recv(source=1)
 
-        for i in range(ITERATIONS):
-            dirichlet_boundary_from_omega2 = comm.recv(source=1)  # Receive right boundary from problem2
-            # Update boundaries of problem3
-            problem3.update_boundary(dirichlet_boundary_from_omega2, 0)  
+        problem3.update_boundary(new_types, new_values, neighbour3)
 
-            # Solve problem3
-            result = Method.solve(problem3)
+        v = method.solve(problem3)
 
-            # Send Dirichlet boundary back to problem2
-            comm.send(result, dest=1)
+        if(i!=0): # do relaxation step
+            v = v*omega + (1-omega)*v_prev
 
+        new_types, new_values = bc.calculate_new_condition(v, problem3, neighbour3)
+        
+        comm.send((new_types, new_values), dest=1)
+
+    # ---------------------------- Process 4-------------------------------------------
     elif rank == 3:
-        # This rank presents the results
-        results_from_omega1 = comm.recv(source=0)  # Receive results from problem1
-        results_from_omega2 = comm.recv(source=1)  # Receive results from problem2
-        results_from_omega3 = comm.recv(source=2)  # Receive results from problem3
+        new_types, new_values = comm.recv(source=1)
 
-        # Print results for each of the omega problems
-        print("\nResults from Omega 1:")
-        print(results_from_omega1)
-        
-        print("\nResults from Omega 2:")
-        print(results_from_omega2)
-        
-        print("\nResults from Omega 3:")
-        print(results_from_omega3)
+        problem4.update_boundary(new_types, new_values, neighbour4)
+
+        v = method.solve(problem4)
+
+        if(i!=0): # do relaxation step
+            v = v*omega + (1-omega)*v_prev
+
+        new_types, new_values = bc.calculate_new_condition(v, problem4, neighbour4)
+
+        comm.send((new_types, new_values), dest=1)
+
+
+
+# Final solve for visualization
+if rank == 0:
+    final_solution_problem1 = method.solve(problem1)
+    comm.send(final_solution_problem1, dest=1)
+
+elif rank == 1:
+    final_solution_problem1 = comm.recv(source=0)
+    final_solution_problem2 = method.solve(problem2)
+
+    # Plot temperature distributions
+    problems = [problem1, problem2]
+    solutions = [final_solution_problem1, final_solution_problem2]
+    plot_temperature(problems, solutions)
+
+elif rank == 2:
+    final_solution_problem1 = comm.recv(source=0)
+    final_solution_problem2 = comm.recv(source=1)
+    final_solution_problem3 = method.solve(problem3)
+    # Plot temperature distributions
+    problems = [problem1, problem2, problem3]
+    solutions = [final_solution_problem1, final_solution_problem2, final_solution_problem3]
+    plot_temperature(problems, solutions)
+
+elif rank == 3:
+    final_solution_problem1 = comm.recv(source=0)
+    final_solution_problem2 = comm.recv(source=1)
+    final_solution_problem3 = comm.recv(source=2)
+    final_solution_problem4 = method.solve(problem4)
+
+    # Plot temperature distributions
+    problems = [problem1, problem2, problem3, problem4]
+    solutions = [final_solution_problem1, final_solution_problem2, final_solution_problem3, final_solution_problem4]
+    plot_temperature(problems, solutions)
+
+
+
+
+# Print final boundary conditions if needed
+if rank == 0:
+    print("Final boundary conditions for problem1:")
+    print(problem1.boundary_conditions_types)
+    print(problem1.boundary_conditions_values)
+
+elif rank == 1:
+    print("Final boundary conditions for problem2:")
+    print(problem2.boundary_conditions_types)
+    print(problem2.boundary_conditions_values)
+
+elif rank == 2:
+    print("Final boundary conditions for problem3:")
+    print(problem3.boundary_conditions_types)
+    print(problem3.boundary_conditions_values)
+
+elif rank == 3:
+    print("Final boundary conditions for problem4:")
+    print(problem4.boundary_conditions_types)
+    print(problem4.boundary_conditions_values)
