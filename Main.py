@@ -107,14 +107,13 @@ problem4 = Problem("room4", p1, p2, p3, p4, step_size, step_size, bound_cond_typ
 
 
 
-
 # -----------------------------------------Init neighbours----------------------------------------------------------------
 if rank == 0:
-    neighbour1 = Neighbour("room2", problem1, problem2, "Neumann")  # Placeholder
-elif rank == 1:
     neighbour2_1 = Neighbour("room1", problem2, problem1, "Dirichlet")  # Placeholder
     neighbour2_3 = Neighbour("room3", problem2, problem3, "Dirichlet")  # Placeholder
     neighbour2_4 = Neighbour("room4", problem2, problem4, "Dirichlet")  # Placeholder
+elif rank == 1:
+    neighbour1 = Neighbour("room2", problem1, problem2, "Neumann")  # Placeholder
 elif rank == 2:
     neighbour3 = Neighbour("room2", problem3, problem2, "Neumann")  # Placeholder
 elif rank == 3:
@@ -129,7 +128,31 @@ for i in range(ITERATIONS):
     
     # ---------------------------- Process 1-------------------------------------------
     if rank == 0:
-        new_types, new_values = comm.recv(source=1)
+        v = method.solve(problem2)
+
+        if(i!=0): # do relaxation step
+            v = v*omega + (1-omega)*v_prev
+
+        new_types_1, new_values_1 = bc.calculate_new_condition(v, problem2, neighbour2_1)
+        new_types_3, new_values_3 = bc.calculate_new_condition(v, problem2, neighbour2_3)
+        new_types_4, new_values_4 = bc.calculate_new_condition(v, problem2, neighbour2_4)
+
+        comm.send((new_types_1, new_values_1), dest=1)
+        comm.send((new_types_3, new_values_3), dest=2)
+        comm.send((new_types_4, new_values_4), dest=3)
+
+        # This might be wrong order
+        new_types_1, new_values_1 = comm.recv(source=1)
+        new_types_3, new_values_3 = comm.recv(source=2)
+        new_types_4, new_values_4 = comm.recv(source=3)
+
+        problem2.update_boundary(new_types_1, new_values_1, neighbour2_1)
+        problem2.update_boundary(new_types_3, new_values_3, neighbour2_3)
+        problem2.update_boundary(new_types_4, new_values_4, neighbour2_4)
+        
+    # ---------------------------- Process 2-------------------------------------------
+    elif rank == 1:        
+        new_types, new_values = comm.recv(source=0)
 
         problem1.update_boundary(new_types, new_values, neighbour1)
 
@@ -140,35 +163,11 @@ for i in range(ITERATIONS):
 
         new_types, new_values = bc.calculate_new_condition(v, problem1, neighbour1)
 
-        comm.send((new_types, new_values), dest=1)
-        
-    # ---------------------------- Process 2-------------------------------------------
-    elif rank == 1:        
-        v = method.solve(problem2)
-
-        if(i!=0): # do relaxation step
-            v = v*omega + (1-omega)*v_prev
-
-        new_types_1, new_values_1 = bc.calculate_new_condition(v, problem2, neighbour2_1)
-        new_types_3, new_values_3 = bc.calculate_new_condition(v, problem2, neighbour2_3)
-        new_types_4, new_values_4 = bc.calculate_new_condition(v, problem2, neighbour2_4)
-
-        comm.send((new_types_1, new_values_1), dest=0)
-        comm.send((new_types_3, new_values_3), dest=2)
-        comm.send((new_types_4, new_values_4), dest=3)
-
-        # This might be wrong order
-        new_types_1, new_values_1 = comm.recv(source=0)
-        new_types_3, new_values_3 = comm.recv(source=2)
-        new_types_4, new_values_4 = comm.recv(source=3)
-
-        problem2.update_boundary(new_types_1, new_values_1, neighbour2_1)
-        problem2.update_boundary(new_types_3, new_values_3, neighbour2_3)
-        problem2.update_boundary(new_types_4, new_values_4, neighbour2_4)
+        comm.send((new_types, new_values), dest=0)
 
     # ---------------------------- Process 3-------------------------------------------
     elif rank == 2:
-        new_types, new_values = comm.recv(source=1)
+        new_types, new_values = comm.recv(source=0)
 
         problem3.update_boundary(new_types, new_values, neighbour3)
 
@@ -179,11 +178,11 @@ for i in range(ITERATIONS):
 
         new_types, new_values = bc.calculate_new_condition(v, problem3, neighbour3)
         
-        comm.send((new_types, new_values), dest=1)
+        comm.send((new_types, new_values), dest=0)
 
     # ---------------------------- Process 4-------------------------------------------
     elif rank == 3:
-        new_types, new_values = comm.recv(source=1)
+        new_types, new_values = comm.recv(source=0)
 
         problem4.update_boundary(new_types, new_values, neighbour4)
 
@@ -194,7 +193,7 @@ for i in range(ITERATIONS):
 
         new_types, new_values = bc.calculate_new_condition(v, problem4, neighbour4)
 
-        comm.send((new_types, new_values), dest=1)
+        comm.send((new_types, new_values), dest=0)
 
 
 
