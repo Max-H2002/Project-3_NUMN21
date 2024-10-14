@@ -217,8 +217,8 @@ class TestIdentity(unittest.TestCase):
         self.assertEqual(new_types, expected_types)
         self.assertEqual(new_values, expected_values)
     
-    def test_Dirichlet_left(self):
-        new_types, new_values = calculate_Neumann_cond(self.v, self.problemN, self.neighbour_rightN)
+    def test_Neumann_left(self):
+        new_types, new_values = calculate_Neumann_cond(self.v, self.problemN1, self.neighbour_rightN)
         expected_types = ["Neumann"] * 4
         expected_values = [4, 4, 4, 4]  # Left column elements in flattened `v`
         
