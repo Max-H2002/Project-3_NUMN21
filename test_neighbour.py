@@ -135,10 +135,10 @@ class TestIdentity(unittest.TestCase):
         B2_r = Point(9,0)
         # expected intersection (left of segment 1) of B2_l and A1
         result_l = self.neighbour.find_overlap_points_segments(A1, B1, A2_l, B2_l)
-        #self.assertEqual(result_l, (B2_l, A1), f"The segments are not intersecting on the left of the first segment.")
+        self.assertEqual(result_l, (Al, None), f"The segments are not intersecting on the left of the first segment.")
         # expected intersection (right of segment 1) of B1 and A2_r
         result_r = self.neighbour.find_overlap_points_segments(A1, B1, A2_r, B2_r)
-        #self.assertEqual(result_r, (B1, A2_r), f"The segments are not intersecting on the right of the first segment.")
+        self.assertEqual(result_r, (A2_r, None), f"The segments are not intersecting on the right of the first segment.")
 
     # tests not overlapping segments
     def test_not_overlapping_segments(self):
