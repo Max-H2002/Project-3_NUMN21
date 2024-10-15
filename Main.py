@@ -208,33 +208,22 @@ for i in range(ITERATIONS):
         comm.send((new_types, new_values), dest=0)
 
 
-
 # Final solve for visualization
 if rank == 0:
-    final_solution_problem1 = method.solve(problem1)
-    comm.send(final_solution_problem1, dest=1)
+    final_solution_problem2 = method.solve(problem2)
+    comm.send(final_solution_problem2, dest=3)
 
 elif rank == 1:
-    final_solution_problem1 = comm.recv(source=0)
-    final_solution_problem2 = method.solve(problem2)
-
-    # Plot temperature distributions
-    problems = [problem1, problem2]
-    solutions = [final_solution_problem1, final_solution_problem2]
-    plot_temperature(problems, solutions)
+    final_solution_problem1 = method.solve(problem1)
+    comm.send(final_solution_problem1, dest=3)
 
 elif rank == 2:
-    final_solution_problem1 = comm.recv(source=0)
-    final_solution_problem2 = comm.recv(source=1)
     final_solution_problem3 = method.solve(problem3)
-    # Plot temperature distributions
-    problems = [problem1, problem2, problem3]
-    solutions = [final_solution_problem1, final_solution_problem2, final_solution_problem3]
-    plot_temperature(problems, solutions)
+    comm.send(final_solution_problem3, dest=3)
 
 elif rank == 3:
-    final_solution_problem1 = comm.recv(source=0)
-    final_solution_problem2 = comm.recv(source=1)
+    final_solution_problem2 = comm.recv(source=0)
+    final_solution_problem1 = comm.recv(source=1)
     final_solution_problem3 = comm.recv(source=2)
     final_solution_problem4 = method.solve(problem4)
 
@@ -242,9 +231,6 @@ elif rank == 3:
     problems = [problem1, problem2, problem3, problem4]
     solutions = [final_solution_problem1, final_solution_problem2, final_solution_problem3, final_solution_problem4]
     plot_temperature(problems, solutions)
-
-
-
 
 # Print final boundary conditions if needed
 if rank == 0:
