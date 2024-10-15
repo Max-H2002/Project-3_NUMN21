@@ -90,16 +90,17 @@ p2 = Point(2.5, 0.5)
 p3 = Point(2.5, 1)
 p4 = Point(2, 1)
 
-boundary1_type = ["Dirichlet"] * int(0.5 * n)
-boundary2_type = ["Dirichlet"] * int(0.5 * n)
-boundary3_type = ["Neumann"] * int(0.5 * n)
-boundary4_type = ["Neumann"] * int(0.5 * n)
+
+boundary1_type = ["Dirichlet"] * round(0.5 * n)
+boundary2_type = ["Dirichlet"] * round(0.5 * n)
+boundary3_type = ["Neumann"] * round(0.5 * n)
+boundary4_type = ["Neumann"] * round(0.5 * n)
 bound_cond_types = [boundary1_type, boundary2_type, boundary3_type, boundary4_type]
 
-boundary1_value = [40] * int(0.5 * n)
-boundary2_value = [15] * int(0.5 * n)
-boundary3_value = [15] * int(0.5 * n)
-boundary4_value = [15] * int(0.5 * n)
+boundary1_value = [40] * round(0.5 * n)
+boundary2_value = [15] * round(0.5 * n)
+boundary3_value = [15] * round(0.5 * n)
+boundary4_value = [15] * round(0.5 * n)
 bound_cond_values = [boundary1_value, boundary2_value, boundary3_value, boundary4_value]
 
 problem4 = Problem("room4", p1, p2, p3, p4, step_size, step_size, bound_cond_types, bound_cond_values)
