@@ -48,20 +48,19 @@ p2 = Point(2,0)
 p3 = Point(2,2)
 p4 = Point(1,2)
 
-boundary1_type = ["Dirichlet"] * (2 * n)
+boundary1_type = ["Dirichlet"] * n
 boundary2_type = ["Dirichlet"] * (2 * n)
-boundary3_type = ["Dirichlet"] * (2 * n)
+boundary3_type = ["Dirichlet"] * n
 boundary4_type = ["Dirichlet"] * (2 * n)
 bound_cond_types = [boundary1_type, boundary2_type, boundary3_type, boundary4_type]
 
-boundary1_value = [5] * (2 * n)
+boundary1_value = [5] * n
 boundary2_value = [15] * (2 * n)
-boundary3_value = [40] * (2 * n)
+boundary3_value = [40] * n
 boundary4_value = [15] * (2 * n)
 bound_cond_values = [boundary1_value, boundary2_value, boundary3_value, boundary4_value]
 
 problem2 = Problem("room2", p1, p2, p3, p4, step_size, step_size, bound_cond_types, bound_cond_values)
-
 
 
 # Initialize third problem (room3)
