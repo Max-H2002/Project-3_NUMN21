@@ -70,16 +70,6 @@ class TestIdentity(unittest.TestCase):
         elif (self.delta_y < 0):
             self.fail(f"The chosen grid size delta_y: {self.delta_y} is negative. Please chose only non-negative values.")
     
-
-        #with self.assertRaises(ValueError):
-        #    Problem(self.A, self.B, self.C, self.D, -self.delta_x, self.delta_y, self.boundary_conditions)
-
-        #with self.assertRaises(ValueError):
-        #    Problem(self.A, self.B, self.C, self.D, self.delta_x, -self.delta_y, self.boundary_conditions)
-        
-        #with self.assertRaises(ValueError):
-        #    Problem(self.A, self.B, self.C, self.D, -self.delta_x, -self.delta_y, self.boundary_conditions)
-
     
     # tests that grid size is smaller then the room
     def test_step_size(self):
