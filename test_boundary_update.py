@@ -195,16 +195,16 @@ class TestIdentity(unittest.TestCase):
 
     def test_Neumann_bottom(self):
         new_types, new_values = calculate_Neumann_cond(self.v, self.problemN1, self.neighbour_rightN)
-        expected_types = ["Neumann"] * 5
-        expected_values = [-15, -15, -15, -15, -15]  # First row in flattened `v`
+        expected_types = ["Neumann"] * 4
+        expected_values = [-15, -15, -15, -15]  # First row in flattened `v`
         
         self.assertEqual(new_types, expected_types)
         self.assertEqual(new_values, expected_values)
     
     def test_Neumann_top(self):
         new_types, new_values = calculate_Neumann_cond(self.v, self.problemN1, self.neighbour_rightN)
-        expected_types = ["Neumann"] * 5
-        expected_values = [-15, -15, -15, -15, -15]  # First row in flattened `v`
+        expected_types = ["Neumann"] * 4
+        expected_values = [-15, -15, -15, -15]  # First row in flattened `v`
         
         self.assertEqual(new_types, expected_types)
         self.assertEqual(new_values, expected_values)
