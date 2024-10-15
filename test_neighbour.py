@@ -117,11 +117,11 @@ class TestIdentity(unittest.TestCase):
         self.assertEqual(result_hr, (A2_hr, B1_h), f"The segments are not overlapping on the right side of the first segment.")
         # vertically
         # expected overlap (upper of segment 1) of A2_vu to B1_v
-        result_vl = self.neighbour.find_overlap_points_segments(A1_v, B1_v, A2_vu, B2_vu)
-        self.assertEqual(result_vl, (A2_vu, B1_v), f"The segments are not overlapping on the left side of the first segment.")
+        result_vu = self.neighbour.find_overlap_points_segments(A1_v, B1_v, A2_vu, B2_vu)
+        self.assertEqual(result_vu, (A2_vu, B1_v), f"The segments are not overlapping on the left side of the first segment.")
         # expected overlap (lower of segment 2) of A1_v to B2_vl
-        result_vr = self.neighbour.find_overlap_points_segments(A1_v, B1_v, A2_vl, B2_vl)
-        self.assertEqual(result_vr, (A1_v, B2_vl), f"The segments are not overlapping on the right side of the first segment.")
+        result_vl = self.neighbour.find_overlap_points_segments(A1_v, B1_v, A2_vl, B2_vl)
+        self.assertEqual(result_vl, (A1_v, B2_vl), f"The segments are not overlapping on the right side of the first segment.")
 
     # tests overlapping points
     def test_points_overlapping_segments(self):
@@ -135,7 +135,7 @@ class TestIdentity(unittest.TestCase):
         B2_r = Point(9,0)
         # expected intersection (left of segment 1) of B2_l and A1
         result_l = self.neighbour.find_overlap_points_segments(A1, B1, A2_l, B2_l)
-        self.assertEqual(result_l, (Al, None), f"The segments are not intersecting on the left of the first segment.")
+        self.assertEqual(result_l, (A1, None), f"The segments are not intersecting on the left of the first segment.")
         # expected intersection (right of segment 1) of B1 and A2_r
         result_r = self.neighbour.find_overlap_points_segments(A1, B1, A2_r, B2_r)
         self.assertEqual(result_r, (A2_r, None), f"The segments are not intersecting on the right of the first segment.")
@@ -166,3 +166,111 @@ class TestIdentity(unittest.TestCase):
         # expected non parallel segments
         result = self.neighbour.find_overlap_points_segments(A1, B1, A2, B2)
         self.assertEqual(result, (None, None), f"The segments are overlapping.")
+
+
+    # tests for find_overlap_points_rectangulars
+
+    def tests_vertical_overlap_points_rectangulars_full_intersec(self):
+        # first case, full intersection 
+        A1_1 = Point(3,0)
+        B1_1 = Point(6,0)
+        C1_1 = Point(6,2)
+        D1_1 = Point(3,2)
+        A2_1 = Point(0,0)
+        B2_1 = Point(3,0)
+        C2_1 = Point(3,2)
+        D2_1 = Point(0,2)
+        problem1_1 = Problem(1, A1_1, B1_1, C1_1, D1_1, 1, 1, ["Dirichlet"], [0])
+        problem2_1 = Problem(1, A2_1, B2_1, C2_1, D2_1, 1, 1, ["Dirichlet"], [0])
+
+        result = self.neighbour.find_overlap_points_rectangulars(problem1_1, problem2_1)
+        self.assertEqual(result, (4, B2_1, C2_1), "The segments overlap.")
+
+    def tests_vertical_overlap_points_rectangulars_partial_intersec_upper(self):   
+        # second case, partial intersection upper 
+        A1_2 = Point(3,1)
+        B1_2 = Point(6,1)
+        C1_2 = Point(6,3)
+        D1_2 = Point(3,3)
+        A2_2 = Point(0,0)
+        B2_2 = Point(3,0)
+        C2_2 = Point(3,2)
+        D2_2 = Point(0,2)
+        problem1_2 = Problem(1, A1_2, B1_2, C1_2, D1_2, 1, 1, ["Dirichlet"], [0])
+        problem2_2 = Problem(1, A2_2, B2_2, C2_2, D2_2, 1, 1, ["Dirichlet"], [0])
+    
+        result = self.neighbour.find_overlap_points_rectangulars(problem1_2, problem2_2)
+        self.assertEqual(result, (4, A1_2, C2_2), "The segments overlap.")
+
+
+    def tests_vertical_overlap_points_rectangulars_partial_intersec_lower(self):   
+        # third case, partial intersection lower 
+        A1_3 = Point(3,0)
+        B1_3 = Point(6,0)
+        C1_3 = Point(6,1)
+        D1_3 = Point(3,1)
+        A2_3 = Point(0,0)
+        B2_3 = Point(3,0)
+        C2_3 = Point(3,2)
+        D2_3 = Point(0,2)
+        problem1_3 = Problem(1, A1_3, B1_3, C1_3, D1_3, 1, 1, ["Dirichlet"], [0])
+        problem2_3 = Problem(1, A2_3, B2_3, C2_3, D2_3, 1, 1, ["Dirichlet"], [0])
+
+        result = self.neighbour.find_overlap_points_rectangulars(problem1_3, problem2_3)
+        self.assertEqual(result, (4, A1_3, D1_3), "The segments overlap.")
+
+
+    def tests_vertical_overlap_points_rectangulars_partial_intersec_lower(self):   
+        # fourtht case, partial intersection middle
+        A1_4 = Point(3,0.5)
+        B1_4 = Point(6,0.5)
+        C1_4 = Point(6,1.5)
+        D1_4 = Point(3,1.5)
+        A2_4 = Point(0,0)
+        B2_4 = Point(3,0)
+        C2_4 = Point(3,2)
+        D2_4 = Point(0,2)
+        problem1_4 = Problem(1, A1_4, B1_4, C1_4, D1_4, 1, 1, ["Dirichlet"], [0])
+        problem2_4 = Problem(1, A2_4, B2_4, C2_4, D2_4, 1, 1, ["Dirichlet"], [0])
+
+        result = self.neighbour.find_overlap_points_rectangulars(problem1_4, problem2_4)
+        self.assertEqual(result, (4, A1_4, D1_4), "The segments overlap.")
+
+
+    # tests for find_indices_in_grid
+
+    def test_find_indices_in_grid_intersec_upper(self):
+        boundary_p1 = Point(3,0)
+        boundary_p2 = Point(3,2)
+        subboundary_p1 = Point(3,1)
+        subboundary_p2 = Point(3,3)
+
+        i1_expected = 2
+        i2_expected = 6
+
+        result = self.neighbour.find_indices_in_grid(boundary_p1, boundary_p2, subboundary_p1, subboundary_p2, 1/2)
+        self.assertEqual(result, (i1_expected, i2_expected))
+
+    def test_find_indices_in_grid_intersec_full_lower(self):
+        boundary_p1 = Point(3,1)
+        boundary_p2 = Point(3,3)
+        subboundary_p1 = Point(3,0)
+        subboundary_p2 = Point(3,3)
+
+        i1_expected = 2
+        i2_expected = 4
+
+        result = self.neighbour.find_indices_in_grid(boundary_p1, boundary_p2, subboundary_p1, subboundary_p2, 1/2)
+        self.assertEqual(result, (i1_expected, i2_expected))
+
+    def test_find_indices_in_grid_intersec_middle(self):
+        boundary_p1 = Point(2,0)
+        boundary_p2 = Point(2,2)
+        subboundary_p1 = Point(2,0.5)
+        subboundary_p2 = Point(2,1.5)
+
+        i1_expected = 1
+        i2_expected = 3
+
+        result = self.neighbour.find_indices_in_grid(boundary_p1, boundary_p2, subboundary_p1, subboundary_p2, 1/2)
+        self.assertEqual(result, (i1_expected, i2_expected))
