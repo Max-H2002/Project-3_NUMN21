@@ -14,6 +14,7 @@ class TestIdentity(unittest.TestCase):
     # implementation of a setUp method to initialize objects that will be used across multiple of the tests
     def setUp(self):
 
+        # setup of an test example
         self.method = Method()
         
         self.A = Point(0,0)
@@ -46,7 +47,7 @@ class TestIdentity(unittest.TestCase):
             boundary_conditions_values=self.boundary_cond_values
         )
 
-
+    # test of the compute_b function for said example
     def test_compute_b(self):
 
         #data_b_expected = [40, 15, 15, 15, 15, 15, 15, 15, 15, 40, 0, 15, 15, 15, 15, 15, 15, 15, 15, 15]
@@ -65,7 +66,7 @@ class TestIdentity(unittest.TestCase):
 
         np.testing.assert_array_equal(b_sparse.toarray(), b_sparse_expected.toarray())
 
-
+    # test of the compute_A function for said example
     def test_compute_A(self):
 
         data_A_expected = [1, 1, 1, 1, 1, 1, 1, 1, -26, 9, 9, 4, 4, -26, 9, 9, 4, 4, -26, 9, 9, 4, 4, -26, 9, 9, 4, 4, -26, 9, 9, 4, 4, 17, -9, -4, -4, 1, 1, 1, 1, 1, 1, 1]
