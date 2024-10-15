@@ -164,7 +164,8 @@ class TestIdentity(unittest.TestCase):
     """
     Tests for BoundaryConditionsUpdate file.
     """
-    
+
+    # test for the Dirichlet update
     def test_Dirichlet_bottom(self):
         new_types, new_values = calculate_Dirichlet_cond(self.v, self.problem1, self.neighbour_bottom)
         expected_types = ["Dirichlet"] * 5
@@ -193,6 +194,7 @@ class TestIdentity(unittest.TestCase):
         self.assertEqual(new_types, expected_types)
         self.assertEqual(new_values, expected_right_col)
 
+    # test for the Neumann update
     def test_Neumann_bottom(self):
         new_types, new_values = calculate_Neumann_cond(self.v, self.problemN1, self.neighbour_rightN)
         expected_types = ["Neumann"] * 4
