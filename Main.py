@@ -9,7 +9,13 @@ from PlotTemperature import plot_temperature
 
 # Starting values
 ITERATIONS = 100  # Number of iterations for the simulation
-n = 6 # number of nodes on the unit segment
+n = 21 # number of nodes on the unit segment
+if n % 2 == 0:
+    adjusted_n = round(0.5 * n +1)
+    n +=1
+else:
+    adjusted_n = round(0.5*n + 1)
+
 step_size = 1/(n-1) # lenght of the grid size, in this case delta_x = delta_y = step_size
 omega = 0.8 # relaxation parameter
 
@@ -27,19 +33,23 @@ p2 = Point(1,0)
 p3 = Point(1,1)
 p4 = Point(0,1)
 
-boundary1_type = ["Dirichlet"] * n  # Bottom
-boundary2_type = ["Neumann"] * n   # Right
-boundary3_type = ["Dirichlet"] * n  # Top
-boundary4_type = ["Dirichlet"] * n  # Left
-bound_cond_types = [boundary1_type, boundary2_type, boundary3_type, boundary4_type]
+# Init boundary conditions types ("Dirichlet"/"Neumann")
+# Note: we start numbering boundaries from the bottom one and go conterclockwise
+boundary1_type = ["Dirichlet"]*n # bottom
+boundary2_type = ["Dirichlet"]*n # right
+boundary3_type = ["Dirichlet"]*n # top
+boundary4_type = ["Dirichlet"]*n # left
+bound_cond_types = [boundary1_type,boundary2_type,boundary3_type,boundary4_type]
 
-boundary1_value = [15] * n  # Bottom
-boundary2_value = [15] * n  # Right
-boundary3_value = [15] * n  # Top
-boundary4_value = [40] * n  # Left
-bound_cond_values = [boundary1_value, boundary2_value, boundary3_value, boundary4_value]
+# Init boundary conditions values
+boundary1_value = [15]*n # bottom
+boundary2_value = [15]*n # right
+boundary3_value = [15]*n # top
+boundary4_value = [40]*n # left
+bound_cond_values = [boundary1_value,boundary2_value,boundary3_value,boundary4_value]
 
-problem1 = Problem("room1", p1, p2, p3, p4, step_size, step_size, bound_cond_types, bound_cond_values)
+# Iniit problem 1 with id "room1"
+problem1 = Problem("room1",p1,p2,p3,p4,step_size,step_size,bound_cond_types,bound_cond_values)
 
 
 # Initialize second problem (room2)
@@ -48,19 +58,23 @@ p2 = Point(2,0)
 p3 = Point(2,2)
 p4 = Point(1,2)
 
-boundary1_type = ["Dirichlet"] * n
-boundary2_type = ["Dirichlet"] * (2 * n)
-boundary3_type = ["Dirichlet"] * n
-boundary4_type = ["Dirichlet"] * (2 * n)
-bound_cond_types = [boundary1_type, boundary2_type, boundary3_type, boundary4_type]
+# Init boundary conditions types ("Dirichlet"/"Neumann")
+boundary1_type = ["Dirichlet"]*(2*n)
+boundary2_type = ["Dirichlet"]*(2*n)
+boundary3_type = ["Dirichlet"]*(2*n)
+boundary4_type = ["Dirichlet"]*(2*n)
+bound_cond_types = [boundary1_type,boundary2_type,boundary3_type,boundary4_type]
 
-boundary1_value = [5] * n
-boundary2_value = [15] * (2 * n)
-boundary3_value = [40] * n
-boundary4_value = [15] * (2 * n)
-bound_cond_values = [boundary1_value, boundary2_value, boundary3_value, boundary4_value]
+# Init boundary conditions values
+boundary1_value = [5]*(2*n)
+boundary2_value = [15]*(2*n)
+boundary3_value = [40]*(2*n)
+boundary4_value = [15]*(2*n)
+bound_cond_values = [boundary1_value,boundary2_value,boundary3_value,boundary4_value]
 
-problem2 = Problem("room2", p1, p2, p3, p4, step_size, step_size, bound_cond_types, bound_cond_values)
+# Iniit problem 2 with id "room2"
+problem2 = Problem("room2",p1,p2,p3,p4,step_size,step_size,bound_cond_types,bound_cond_values)
+
 
 
 # Initialize third problem (room3)
@@ -69,10 +83,10 @@ p2 = Point(3,1)
 p3 = Point(3,2)
 p4 = Point(2,2)
 
-boundary1_type = ["Neumann"] * (1 * n)
+boundary1_type = ["Dirichlet"] * (1 * n)
 boundary2_type = ["Dirichlet"] * (1 * n)
 boundary3_type = ["Dirichlet"] * (1 * n)
-boundary4_type = ["Neumann"] * (1 * n)
+boundary4_type = ["Dirichlet"] * (1 * n)
 bound_cond_types = [boundary1_type, boundary2_type, boundary3_type, boundary4_type]
 
 boundary1_value = [15] * (1 * n)
@@ -84,23 +98,21 @@ bound_cond_values = [boundary1_value, boundary2_value, boundary3_value, boundary
 problem3 = Problem("room3", p1, p2, p3, p4, step_size, step_size, bound_cond_types, bound_cond_values)
 
 
-# Initialize forth problem (room4)
 p1 = Point(2, 0.5)
 p2 = Point(2.5, 0.5)
 p3 = Point(2.5, 1)
 p4 = Point(2, 1)
 
-
-boundary1_type = ["Dirichlet"] * round(0.5 * n)
-boundary2_type = ["Dirichlet"] * round(0.5 * n)
-boundary3_type = ["Neumann"] * round(0.5 * n)
-boundary4_type = ["Neumann"] * round(0.5 * n)
+boundary1_type = ["Dirichlet"] * adjusted_n
+boundary2_type = ["Dirichlet"] * adjusted_n
+boundary3_type = ["Dirichlet"] * adjusted_n
+boundary4_type = ["Dirichlet"] * adjusted_n
 bound_cond_types = [boundary1_type, boundary2_type, boundary3_type, boundary4_type]
 
-boundary1_value = [40] * round(0.5 * n)
-boundary2_value = [15] * round(0.5 * n)
-boundary3_value = [15] * round(0.5 * n)
-boundary4_value = [15] * round(0.5 * n)
+boundary1_value = [40] * adjusted_n
+boundary2_value = [15] * adjusted_n
+boundary3_value = [15] * adjusted_n
+boundary4_value = [15] * adjusted_n
 bound_cond_values = [boundary1_value, boundary2_value, boundary3_value, boundary4_value]
 
 problem4 = Problem("room4", p1, p2, p3, p4, step_size, step_size, bound_cond_types, bound_cond_values)
